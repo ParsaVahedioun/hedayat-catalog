@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل مدیریت کاتالوگ | هدایت گستر</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- ============================= دروازه ورود ============================= -->
+<div class="login-wrap" id="login-gate">
+  <form class="login-card" id="login-form">
+    <h1>⚙️ پنل مدیریت کاتالوگ</h1>
+    <p>صنایع برق و روشنایی هدایت گستر</p>
+    <div class="field">
+      <label for="login-pass">رمز مدیر</label>
+      <input type="password" id="login-pass" autocomplete="current-password" placeholder="رمز را وارد کنید">
+    </div>
+    <button class="btn btn-primary" style="width:100%" type="submit">ورود به پنل</button>
+    <div class="hint">
+      رمز پیش‌فرض: <b>hg1404</b> — پس از اولین ورود از بخش «تنظیمات» آن را تغییر دهید.<br>
+      توجه: چون این نسخه بدون سرور کار می‌کند، این رمز فقط یک قفل ساده است و امنیت سروری ندارد.
+    </div>
+  </form>
+</div>
+
+<!-- ================================ پنل ================================ -->
+<div id="admin-app" hidden>
+  <header class="admin-header">
+    <div class="brand">
+      <span class="badge" id="hdr-logo">HG</span>
+      <span id="hdr-title">پنل مدیریت کاتالوگ</span>
+    </div>
+    <span class="sp"></span>
+    <span class="pill" id="hdr-storage">💾</span>
+    <a class="btn btn-sm" href="../index.html" target="_blank">👁️ کاتالوگ</a>
+    <a class="btn btn-sm" href="../print.html" target="_blank">📄 نمای چاپ</a>
+    <button class="btn btn-sm btn-primary" id="btn-new-product">➕ کالای جدید</button>
+    <button class="btn btn-sm" id="btn-logout">خروج</button>
+  </header>
+
+  <div class="admin-layout">
+    <!-- ------------------------------- منو ------------------------------- -->
+    <nav class="admin-nav" id="admin-nav">
+      <button data-tab="dash" class="active">📊 داشبورد</button>
+      <button data-tab="products">📦 مدیریت کالاها</button>
+      <button data-tab="editor" id="nav-editor" hidden>✏️ ویرایش کالا</button>
+      <div class="nav-sep"></div>
+      <button data-tab="categories">🗂️ دسته‌بندی‌ها</button>
+      <button data-tab="types">🏷️ انواع کالا</button>
+      <button data-tab="brands">🔖 برندها</button>
+      <button data-tab="fields">🧪 فیلدهای مشخصات فنی</button>
+      <div class="nav-sep"></div>
+      <button data-tab="settings">⚙️ تنظیمات و برندینگ</button>
+      <button data-tab="backup">💾 پشتیبان‌گیری و انتقال</button>
+    </nav>
+
+    <!-- ------------------------------ محتوا ------------------------------ -->
+    <main>
+      <!-- داشبورد -->
+      <section class="tab-page active" id="page-dash">
+        <div class="panel-card">
+          <h3><span class="dot"></span> خلاصه وضعیت کاتالوگ</h3>
+          <div class="stats" id="dash-stats"></div>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> آخرین کالاهای ثبت‌شده</h3>
+          <div class="table-wrap" id="dash-recent"></div>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> راهنمای سریع</h3>
+          <div class="note">
+            ۱) از «دسته‌بندی‌ها» ساختار درختی کالاها را بسازید. ۲) از «انواع کالا»، نوع‌ها (توکار، روکار، تک‌فاز و ...) را تعریف کنید.
+            ۳) از «فیلدهای مشخصات فنی» مشخصه‌های دلخواه اضافه کنید. ۴) کالا را با تصویر، ویژگی‌ها و مشخصات ثبت کنید.
+            <br>همه تغییرات در دیتابیس مرورگر ذخیره می‌شود؛ برای انتقال بین دستگاه‌ها از «پشتیبان‌گیری و انتقال» فایل JSON بگیرید.
+          </div>
+        </div>
+      </section>
+
+      <!-- کالاها -->
+      <section class="tab-page" id="page-products">
+        <div class="panel-card">
+          <h3><span class="dot"></span> فهرست کالاها</h3>
+          <div class="btn-row" style="margin-bottom:12px">
+            <input id="prod-search" placeholder="🔍 جستجو در نام، کد یا برند..." style="flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:10px">
+            <select id="prod-cat-filter" style="padding:10px;border:1px solid var(--line);border-radius:10px"></select>
+            <button class="btn btn-primary" id="btn-new-product-2">➕ افزودن کالا</button>
+          </div>
+          <div class="table-wrap" id="prod-table"></div>
+        </div>
+      </section>
+
+      <!-- فرم کالا -->
+      <section class="tab-page" id="page-editor">
+        <form id="product-form">
+          <div class="panel-card">
+            <h3><span class="dot"></span> اطلاعات اصلی کالا</h3>
+            <div class="grid3">
+              <div class="field"><label>نام کالا *</label><input id="f-name" required></div>
+              <div class="field"><label>نام انگلیسی</label><input id="f-nameEn" dir="ltr"></div>
+              <div class="field"><label>کد کالا (SKU)</label><input id="f-sku" dir="ltr" placeholder="HG-XXXX"></div>
+            </div>
+            <div class="grid4">
+              <div class="field"><label>دسته‌بندی *</label><select id="f-categoryId" required></select></div>
+              <div class="field"><label>نوع کالا</label><select id="f-typeId"></select></div>
+              <div class="field"><label>برند</label><select id="f-brand"></select></div>
+              <div class="field"><label>وضعیت موجودی</label><select id="f-availability">
+                <option value="in">موجود در انبار</option>
+                <option value="order">قابل سفارش</option>
+                <option value="out">اختصاصی / ناموجود</option>
+              </select></div>
+            </div>
+            <div class="grid4">
+              <div class="field"><label>ترتیب نمایش</label><input id="f-order" type="number" min="0"></div>
+              <div class="field"><label>قیمت (اختیاری، تومان)</label><input id="f-price" type="number" min="0"></div>
+              <div class="field"><label>برچسب‌ها (با کاما جدا کنید)</label><input id="f-tags" placeholder="پرفروش، صنعتی"></div>
+              <div class="field" style="display:flex;flex-direction:column;justify-content:center;gap:6px">
+                <label class="check"><input type="checkbox" id="f-featured"> کالای ویژه</label>
+                <label class="check"><input type="checkbox" id="f-isNew"> کالای جدید</label>
+              </div>
+            </div>
+            <div class="field"><label>توضیح کوتاه (روی کارت کالا نمایش داده می‌شود)</label>
+              <textarea id="f-summary" style="min-height:60px"></textarea></div>
+            <div class="field"><label>توضیح کامل کالا</label><textarea id="f-description"></textarea></div>
+          </div>
+
+          <div class="panel-card">
+            <h3><span class="dot"></span> تصاویر کالا
+              <span style="flex:1"></span>
+              <button type="button" class="btn btn-sm" id="btn-img-url">🔗 افزودن با آدرس تصویر</button>
+            </h3>
+            <div class="drop" id="img-drop">
+              🖼️ تصاویر را اینجا رها کنید یا کلیک کنید (چند فایل هم‌زمان مجاز است)<br>
+              <small>تصاویر خودکار تا عرض ۱۲۸۰ پیکسل فشرده می‌شوند تا حجم کاتالوگ سبک بماند.</small>
+              <input type="file" id="img-file" accept="image/*" multiple hidden>
+            </div>
+            <div class="thumbs-edit" id="img-thumbs"></div>
+          </div>
+
+          <div class="panel-card">
+            <h3><span class="dot"></span> ویژگی‌های کالا (لیست بولت‌ها)
+              <span style="flex:1"></span>
+              <button type="button" class="btn btn-sm" id="btn-add-feat">➕ افزودن ویژگی</button>
+            </h3>
+            <div id="feat-rows"></div>
+          </div>
+
+          <div class="panel-card">
+            <h3><span class="dot"></span> مشخصات فنی
+              <span style="flex:1"></span>
+              <button type="button" class="btn btn-sm" id="btn-add-spec">➕ مشخصه دلخواه</button>
+            </h3>
+            <div id="spec-rows"></div>
+          </div>
+
+          <div class="panel-card">
+            <h3><span class="dot"></span> فایل‌های پیوست</h3>
+            <div class="grid2">
+              <div class="field"><label>لینک ویدیو محصول</label><input id="f-video" dir="ltr" placeholder="https://..."></div>
+              <div class="field"><label>لینک فایل دیتاشیت (PDF)</label><input id="f-datasheet" dir="ltr" placeholder="https://..."></div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="btn-row">
+              <button class="btn btn-primary" type="submit">💾 ذخیره کالا</button>
+              <button class="btn" type="button" id="btn-preview">👁️ پیش‌نمایش کارت</button>
+              <button class="btn" type="button" id="btn-cancel-edit">انصراف</button>
+              <span style="flex:1"></span>
+              <button class="btn btn-danger" type="button" id="btn-delete-current">🗑️ حذف این کالا</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- دسته‌بندی‌ها -->
+      <section class="tab-page" id="page-categories">
+        <div class="panel-card">
+          <h3><span class="dot"></span> افزودن دسته‌بندی جدید</h3>
+          <div class="grid3">
+            <div class="field"><label>عنوان دسته *</label><input id="cat-title" placeholder="مثال: چراغ رشد گیاه"></div>
+            <div class="field"><label>زیرمجموعه دسته</label><select id="cat-parent"></select></div>
+            <div class="field"><label>آیکن (اموجی، اختیاری)</label><input id="cat-icon" placeholder="💡"></div>
+          </div>
+          <button class="btn btn-primary" id="btn-add-cat" type="button">➕ افزودن دسته‌بندی</button>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> ساختار دسته‌بندی‌ها</h3>
+          <div class="cat-rows" id="cat-list"></div>
+        </div>
+      </section>
+
+      <!-- انواع کالا -->
+      <section class="tab-page" id="page-types">
+        <div class="panel-card">
+          <h3><span class="dot"></span> افزودن نوع کالا</h3>
+          <div class="grid3">
+            <div class="field"><label>عنوان نوع *</label><input id="type-title" placeholder="مثال: چهار پل"></div>
+            <div class="field"><label>محدود به دسته‌ها (چندانتخابی)</label>
+              <select id="type-cats" multiple size="5" style="min-height:110px"></select></div>
+            <div class="field" style="align-self:end">
+              <button class="btn btn-primary" id="btn-add-type" type="button">➕ افزودن نوع</button>
+              <small style="color:var(--soft);font-size:.78rem;display:block;margin-top:6px">
+                اگر دسته‌ای انتخاب نکنید، این نوع برای همه دسته‌ها نمایش داده می‌شود.
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> انواع کالای ثبت‌شده</h3>
+          <div class="table-wrap" id="type-table"></div>
+        </div>
+      </section>
+
+      <!-- برندها -->
+      <section class="tab-page" id="page-brands">
+        <div class="panel-card">
+          <h3><span class="dot"></span> مدیریت برندها</h3>
+          <div class="chip-add" style="margin-bottom:14px">
+            <input id="brand-input" placeholder="نام برند جدید" style="padding:10px 12px;border:1px solid var(--line);border-radius:10px">
+            <button class="btn btn-primary" id="btn-add-brand" type="button">➕ افزودن برند</button>
+          </div>
+          <div id="brand-list" class="chip-add"></div>
+        </div>
+      </section>
+
+      <!-- فیلدهای مشخصات فنی -->
+      <section class="tab-page" id="page-fields">
+        <div class="panel-card">
+          <h3><span class="dot"></span> افزودن فیلد مشخصات فنی</h3>
+          <div class="grid4">
+            <div class="field"><label>عنوان فیلد *</label><input id="fld-label" placeholder="مثال: راندمان نوری"></div>
+            <div class="field"><label>کلید لاتین (یکتا)</label><input id="fld-key" dir="ltr" placeholder="efficacy"></div>
+            <div class="field"><label>واحد</label><input id="fld-unit" placeholder="لومن/وات"></div>
+            <div class="field"><label>نوع مقدار</label><select id="fld-type">
+              <option value="text">متنی</option>
+              <option value="number">عددی</option>
+              <option value="select">انتخابی از لیست</option>
+            </select></div>
+          </div>
+          <div class="grid3">
+            <div class="field"><label>گروه نمایش (در جدول مشخصات)</label><input id="fld-group" placeholder="مشخصات نوری"></div>
+            <div class="field"><label>گزینه‌ها (برای نوع انتخابی، با کاما)</label><input id="fld-options" placeholder="3000، 4000، 6500"></div>
+            <div class="field" style="align-self:end">
+              <label class="check"><input type="checkbox" id="fld-filter"> نمایش در فیلترهای کاتالوگ</label>
+              <button class="btn btn-primary" id="btn-add-field" type="button" style="margin-top:8px">➕ افزودن فیلد</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> فیلدهای موجود</h3>
+          <div class="table-wrap" id="field-table"></div>
+        </div>
+      </section>
+
+      <!-- تنظیمات -->
+      <section class="tab-page" id="page-settings">
+        <form id="settings-form">
+          <div class="panel-card">
+            <h3><span class="dot"></span> هویت برند و اطلاعات تماس</h3>
+            <div class="grid2">
+              <div class="field"><label>نام فارسی شرکت</label><input id="s-brandFa"></div>
+              <div class="field"><label>نام انگلیسی شرکت</label><input id="s-brandEn" dir="ltr"></div>
+              <div class="field"><label>شعار / معرفی کوتاه</label><input id="s-slogan"></div>
+              <div class="field"><label>حروف لوگو (روی نشان)</label><input id="s-logoText" maxlength="4"></div>
+              <div class="field"><label>تلفن</label><input id="s-phone" dir="ltr"></div>
+              <div class="field"><label>موبایل پشتیبانی</label><input id="s-mobile" dir="ltr"></div>
+              <div class="field"><label>ایمیل</label><input id="s-email" dir="ltr"></div>
+              <div class="field"><label>وب‌سایت</label><input id="s-site" dir="ltr"></div>
+              <div class="field"><label>آدرس</label><input id="s-address"></div>
+              <div class="field"><label>اینستاگرام</label><input id="s-instagram" dir="ltr"></div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3><span class="dot"></span> تم، کاتالوگ و PDF</h3>
+            <div class="grid4">
+              <div class="field"><label>رنگ اصلی</label><input id="s-themePrimary" type="color" style="height:46px;padding:4px"></div>
+              <div class="field"><label>رنگ تأکیدی</label><input id="s-themeAccent" type="color" style="height:46px;padding:4px"></div>
+              <div class="field"><label>عنوان کاتالوگ (جلد PDF)</label><input id="s-catalogTitle"></div>
+              <div class="field"><label>زیرعنوان کاتالوگ</label><input id="s-catalogSubtitle"></div>
+            </div>
+            <div class="grid3">
+              <div class="field"><label>برچسب قیمت</label><input id="s-priceLabel"></div>
+              <div class="field"><label>جهت پیش‌فرض PDF</label><select id="s-pdfOrientation">
+                <option value="portrait">A4 عمودی</option>
+                <option value="landscape">A4 افقی</option>
+              </select></div>
+              <div class="field" style="align-self:end">
+                <label class="check"><input type="checkbox" id="s-showPrices"> نمایش قیمت به بازدیدکننده (فروش عمده: خاموش بماند)</label>
+              </div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3><span class="dot"></span> امنیت پنل</h3>
+            <div class="grid2">
+              <div class="field"><label>رمز مدیر جدید</label><input id="s-pass1" type="password" placeholder="خالی بگذارید تا تغییر نکند"></div>
+              <div class="field"><label>تکرار رمز جدید</label><input id="s-pass2" type="password"></div>
+            </div>
+          </div>
+          <div class="panel-card">
+            <button class="btn btn-primary" type="submit">💾 ذخیره تنظیمات</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- پشتیبان‌گیری -->
+      <section class="tab-page" id="page-backup">
+        <div class="panel-card">
+          <h3><span class="dot"></span> پشتیبان‌گیری و انتقال داده</h3>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-export-json">⬇️ دانلود فایل پشتیبان JSON</button>
+            <button class="btn" id="btn-export-csv">⬇️ خروجی CSV کالاها (اکسل)</button>
+            <button class="btn" id="btn-import-json">⬆️ بازگرداندن از فایل JSON</button>
+            <button class="btn" id="btn-import-csv">⬆️ افزودن کالا از فایل CSV</button>
+            <input type="file" id="file-json" accept=".json" hidden>
+            <input type="file" id="file-csv" accept=".csv" hidden>
+          </div>
+          <div class="note" style="margin-top:14px">
+            <b>روش انتقال داده:</b><br>
+            برای انتقال بین مرورگر یا دستگاه‌ها، فایل JSON پشتیبان را با «بازگرداندن از فایل JSON» بارگذاری کنید.
+            برای انتشار روی هاست هم با دکمه «ساخت فایل seed از داده فعلی» می‌توانید محتوای داده را بسازید و
+            در فایل <code>data/seed-products.js</code> قرار دهید تا کاتالوگ با همین کالاها بالا بیاید.
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-accent" id="btn-make-seed">🧩 ساخت فایل seed از داده فعلی</button>
+            <button class="btn btn-danger" id="btn-reset-seed">♻️ بازگردانی به داده‌های اولیه</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <h3><span class="dot"></span> وضعیت ذخیره‌سازی</h3>
+          <div id="backup-status" style="font-size:.9rem"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- مودال پیش‌نمایش کارت -->
+<div class="overlay" id="preview-overlay">
+  <div class="modal" style="width:min(420px,96vw)">
+    <div class="modal-head"><h3>پیش‌نمایش کارت کالا</h3><span class="sp"></span>
+      <button class="btn btn-sm" data-close="preview-overlay">بستن ✕</button></div>
+    <div class="modal-body" id="preview-body"></div>
+  </div>
+</div>
+
+<!-- مودال تأیید -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal" style="width:min(430px,96vw)">
+    <div class="modal-head"><h3 id="confirm-title">تأیید عملیات</h3><span class="sp"></span>
+      <button class="btn btn-sm" data-close="confirm-overlay">بستن ✕</button></div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="margin:0 0 16px"></p>
+      <div class="btn-row">
+        <button class="btn btn-danger" id="confirm-yes">بله، انجام بده</button>
+        <button class="btn" data-close="confirm-overlay">انصراف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال متن (seed / CSV) -->
+<div class="overlay" id="text-overlay">
+  <div class="modal" style="width:min(720px,96vw)">
+    <div class="modal-head"><h3 id="text-title">متن</h3><span class="sp"></span>
+      <button class="btn btn-sm" data-close="text-overlay">بستن ✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label id="text-help"></label>
+        <textarea id="text-area" dir="ltr" style="min-height:300px;font-family:Consolas,monospace;font-size:.8rem"></textarea></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="text-copy">📋 کپی در حافظه</button>
+        <button class="btn" id="text-download">⬇️ دانلود فایل</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="../data/seed.js"></script>
+<script src="../data/seed-products.js"></script>
+<script src="../assets/js/store.js"></script>
+<script src="../assets/js/admin.js"></script>
+</body>
+</html>

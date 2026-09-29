@@ -1,0 +1,236 @@
+/* =============================================================================
+   هدایت گستر | استایل PDF و چاپ — قالب کاتالوگ A4
+   -----------------------------------------------------------------------------
+   ساختار: جلد → فهرست مطالب → یک صفحه برای هر کالا (یا دو کالا) + پاصفحه
+   نکته: اندازه و جهت کاغذ (@page) به‌صورت پویا از print.js تنظیم می‌شود تا
+   حالت A4 افقی هم درست چاپ شود.
+============================================================================= */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700; font-display: swap;
+}
+
+:root {
+  --p: #0B3D91;
+  --p2: #1E6BD6;
+  --accent: #F5A623;
+  --ink: #14213a;
+  --soft: #5d6d89;
+  --line: #dfe6f2;
+  --font: 'Vazirmatn', Tahoma, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  font-family: var(--font); direction: rtl; text-align: right; color: var(--ink);
+  background: #e9eef7; line-height: 1.85; font-size: 12.5pt;
+}
+
+/* -------------------------------------------- نوار ابزار بالای صفحه چاپ */
+.toolbar-print {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 18px rgba(16, 40, 90, .08);
+}
+.toolbar-print b { color: var(--p); font-size: .92rem; }
+.tp-info { font-size: .78rem; color: var(--soft); }
+.toolbar-print .sp { flex: 1; }
+.tp-group { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.toolbar-print button, .toolbar-print a {
+  border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
+  padding: 7px 12px; border-radius: 10px; font-family: inherit; font-size: .82rem;
+  font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.tp-group button { border: 0; border-radius: 0; }
+.tp-group button + button { border-inline-start: 1px solid var(--line); }
+.toolbar-print button.primary {
+  background: linear-gradient(135deg, var(--p), var(--p2)); color: #fff; border-color: transparent;
+}
+.toolbar-print button.active {
+  background: var(--p); color: #fff; border-color: var(--p);
+}
+.tp-group button.active { background: var(--p); color: #fff; }
+@media (max-width: 720px) {
+  .toolbar-print { gap: 6px; padding: 8px 10px; }
+  .toolbar-print b { width: 100%; }
+  .toolbar-print button, .toolbar-print a { padding: 6px 9px; font-size: .76rem; }
+  .tp-info { width: 100%; }
+}
+
+.loading { text-align: center; padding: 60px 20px; color: var(--soft); }
+
+/* ---------------------------------------------------------------- صفحه A4 */
+.sheet {
+  width: 210mm; min-height: 297mm; margin: 14px auto; background: #fff;
+  box-shadow: 0 10px 30px rgba(20, 40, 80, .16); position: relative;
+  padding: 14mm 14mm 20mm; page-break-after: always; break-after: page;
+  overflow: hidden;
+}
+.sheet.landscape { width: 297mm; min-height: 210mm; }
+
+/* ------------------------------------------------------------------- جلد */
+.cover {
+  background: linear-gradient(150deg, #071f4a 0%, var(--p) 48%, #1550a8 100%);
+  color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; padding: 22mm 16mm;
+}
+.cover .glow {
+  position: absolute; width: 120mm; height: 120mm; border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 166, 35, .45), transparent 65%);
+  top: -30mm; left: -25mm;
+}
+.cover .glow.b {
+  top: auto; left: auto; bottom: -35mm; right: -25mm;
+  background: radial-gradient(circle, rgba(30, 107, 214, .6), transparent 65%);
+}
+.cover-logo {
+  width: 26mm; height: 26mm; border-radius: 8mm; display: grid; place-items: center;
+  background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .35);
+  font-size: 18pt; font-weight: 700; margin-bottom: 10mm;
+}
+.cover h1 { font-size: 26pt; margin: 0 0 4mm; line-height: 1.4; }
+.cover h2 { font-size: 13pt; font-weight: 400; color: #cfe0ff; margin: 0 0 10mm; }
+.cover .rule { width: 40mm; height: 1.4mm; background: var(--accent); border-radius: 4px; margin: 0 auto 10mm; }
+.cover .meta { font-size: 10.5pt; color: #e2ecff; line-height: 2.1; }
+.cover .foot { position: absolute; bottom: 14mm; font-size: 9.5pt; color: #b9cdf0; }
+
+/* ---------------------------------------------------------- فهرست مطالب */
+.toc h1 { color: var(--p); font-size: 18pt; margin: 0 0 6mm; }
+.toc ol { list-style: none; counter-reset: t; padding: 0; margin: 0; }
+.toc li {
+  counter-increment: t; display: flex; align-items: baseline; gap: 3mm;
+  padding: 2.4mm 0; border-bottom: 1px dotted var(--line); font-size: 11pt;
+}
+.toc li::before { content: counter(t); color: var(--p2); font-weight: 700; min-width: 8mm; }
+.toc li.grp { border: none; padding: 3mm 0 1mm; font-weight: 700; color: var(--p); }
+.toc li.grp::before { content: ''; min-width: 8mm; }
+.toc li .dots { flex: 1; border-bottom: 1px dotted #c8d4e8; }
+.toc li .pg { color: var(--soft); }
+
+/* ------------------------------------------------------ صفحه هر کالا */
+.p-block { break-inside: avoid; }
+.p-head {
+  display: flex; align-items: flex-start; gap: 6mm;
+  border-bottom: 2px solid var(--p); padding-bottom: 4mm; margin-bottom: 5mm;
+}
+.p-code { text-align: left; direction: ltr; font-size: 9pt; color: var(--soft); flex: 0 0 auto; }
+.p-title { font-size: 17pt; margin: 0 0 1.5mm; color: var(--ink); }
+.p-en { font-size: 10pt; color: var(--soft); direction: ltr; text-align: right; }
+.p-cat { font-size: 9.5pt; color: var(--p2); }
+
+.p-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.p-img {
+  border: 1px solid var(--line); border-radius: 4mm; overflow: hidden; background: #f2f5fb;
+  display: grid; place-items: center; min-height: 62mm;
+}
+.p-img img { width: 100%; height: 62mm; object-fit: contain; }
+.p-summary { font-size: 10.5pt; color: #35456a; margin: 4mm 0 0; }
+.p-kv { display: flex; gap: 3mm; flex-wrap: wrap; margin-bottom: 4mm; }
+.p-kv div {
+  border: 1px solid var(--line); border-radius: 3mm; padding: 2mm 3mm; text-align: center;
+  min-width: 22mm; background: #f7f9fe;
+}
+.p-kv b { display: block; color: var(--p); font-size: 11pt; }
+.p-kv span { font-size: 8pt; color: var(--soft); }
+
+table.specs { width: 100%; border-collapse: collapse; font-size: 9.8pt; }
+table.specs caption { text-align: right; font-weight: 700; color: var(--p2); font-size: 10pt; padding: 2mm 0 1.5mm; }
+table.specs th, table.specs td { border-bottom: 1px solid var(--line); padding: 1.6mm 2mm; text-align: right; }
+table.specs th { color: var(--soft); font-weight: 400; width: 44%; background: #fafcff; }
+table.specs tr:nth-child(even) td { background: #fcfdff; }
+
+.feats { list-style: none; margin: 3mm 0 0; padding: 0; font-size: 10pt; }
+.feats li { padding: 1.4mm 0; display: flex; gap: 2mm; }
+.feats li::before { content: '✔'; color: #17a673; }
+.desc { font-size: 10pt; color: #35456a; text-align: justify; }
+
+.p-foot {
+  position: absolute; bottom: 8mm; right: 14mm; left: 14mm;
+  display: flex; align-items: center; justify-content: space-between; gap: 4mm;
+  border-top: 1px solid var(--line); padding-top: 3mm; font-size: 8.5pt; color: var(--soft);
+}
+.p-foot .brand-mini { font-weight: 700; color: var(--p); }
+
+/* ------------------------------------------------------ چیدمان فشرده (۲ در صفحه) */
+.sheet.compact { padding: 12mm 14mm 18mm; }
+.sheet.compact .p-block + .p-block { margin-top: 6mm; padding-top: 5mm; border-top: 1px dashed var(--line); }
+.sheet.compact .p-body { grid-template-columns: 1fr 1fr; gap: 5mm; }
+.sheet.compact .p-img { min-height: 46mm; }
+.sheet.compact .p-img img { height: 46mm; }
+.sheet.compact .p-title { font-size: 14pt; }
+.sheet.compact table.specs { font-size: 9pt; }
+.sheet.compact .desc { font-size: 9.2pt; }
+.sheet.compact .feats { font-size: 9.2pt; }
+
+/* ==========================================================================
+   حالت «کاتالوگ فشرده» — فقط برند + تصویر + نام کالا + کد
+   کالاها بر اساس برند گروه‌بندی می‌شوند تا تنوع برند در یک نگاه دیده شود.
+   در این حالت هیچ توضیح، ویژگی یا جدول مشخصات فنی چاپ نمی‌شود.
+========================================================================== */
+.compact-sheet { padding: 12mm 12mm 18mm; }
+.c-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm 4mm; }
+.compact-sheet.landscape .c-grid { grid-template-columns: repeat(4, 1fr); }
+
+.c-brand {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 3mm;
+  margin: 0; padding: 1mm 0 2mm; font-size: 13pt; color: var(--p);
+  border-bottom: 1.6px solid var(--p); break-after: avoid;
+}
+.c-brand i { font-style: normal; font-size: 8.5pt; color: var(--soft); font-weight: 400; }
+
+.c-card {
+  border: 1px solid var(--line); border-radius: 3mm; background: #fff;
+  padding: 3mm; display: flex; flex-direction: column; break-inside: avoid;
+}
+.c-img {
+  background: #f2f5fb; border-radius: 2.5mm; display: grid; place-items: center;
+  height: 36mm; overflow: hidden;
+}
+.c-img img { width: 100%; height: 36mm; object-fit: contain; }
+.c-name {
+  font-size: 9pt; font-weight: 700; line-height: 1.55; margin-top: 2.5mm;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.c-code { font-size: 7.5pt; color: var(--soft); direction: ltr; text-align: right; margin-top: 1.5mm; }
+
+.toc-note { font-size: 10pt; color: var(--soft); margin: 0 0 5mm; }
+
+/* --------------------------------------------------- تنظیمات واقعی چاپ */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { background: #fff; }
+  .toolbar-print { display: none !important; }
+  .sheet {
+    margin: 0; box-shadow: none; width: 210mm; min-height: 296mm;
+    page-break-after: always; break-after: page;
+  }
+  .sheet.landscape { width: 297mm; min-height: 209mm; }
+  .sheet:last-child { page-break-after: auto; break-after: auto; }
+  .p-img { break-inside: avoid; }
+  .p-block { break-inside: avoid; }
+  table.specs { break-inside: avoid; }
+  .c-card { break-inside: avoid; }
+  .compact-sheet { padding: 12mm 12mm 16mm; }
+}
+
+/* -------------------------------------- پیش‌نمایش روی صفحه‌های کوچک */
+@media screen and (max-width: 900px) {
+  .sheet {
+    width: 100%; min-height: 0; margin: 10px auto; padding: 6mm;
+    border-radius: 12px;
+  }
+  .sheet.landscape { width: 100%; min-height: 0; }
+  .p-body { grid-template-columns: 1fr; }
+  .p-foot { position: static; margin-top: 6mm; }
+  .c-grid, .compact-sheet.landscape .c-grid { grid-template-columns: repeat(2, 1fr); }
+}

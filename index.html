@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B3D91">
+<title>کاتالوگ محصولات | صنایع برق و روشنایی هدایت گستر</title>
+<meta name="description" content="کاتالوگ دیجیتال محصولات هدایت گستر: لامپ، پنل، براکت، پروژکتور، چراغ، سیم و کابل، کلید مینیاتوری و تجهیزات برق صنعتی">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div id="scroll-progress"></div>
+
+<!-- ============================== نوار بالا ============================== -->
+<header class="topbar" id="topbar">
+  <button class="brand" id="brand" type="button" aria-label="بازگشت به ابتدای کاتالوگ">
+    <span class="brand-badge" id="brand-badge">HG</span>
+    <span class="brand-text">
+      <b id="brand-fa">صنایع برق و روشنایی هدایت گستر</b>
+      <i id="brand-en">Hedayat Gostar</i>
+    </span>
+  </button>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btn-theme" type="button" title="حالت روز / شب" aria-label="تغییر حالت روز و شب">🌙</button>
+    <button class="icon-btn" id="btn-pdf" type="button" title="خروجی PDF" aria-label="خروجی PDF">📄</button>
+    <a class="icon-btn" href="admin/index.html" title="پنل مدیریت" aria-label="پنل مدیریت">⚙️</a>
+  </div>
+</header>
+
+<!-- ============================== جستجو ============================== -->
+<!-- ====================== سوییچ نمایش + کاتالوگ کد کالا ====================== -->
+<div class="cc-views"><button type="button" class="cc-view active" data-view="code">📚 کاتالوگ بر اساس کد کالا</button><button type="button" class="cc-view" data-view="old">🖼️ محصولات تصویری</button></div>
+<section class="wrap" id="code-catalog" aria-label="کاتالوگ بر اساس کد کالا">
+  <div class="cc-tabs"><button type="button" class="cc-tab active" data-mode="type">بر اساس نوع کالا</button><button type="button" class="cc-tab" data-mode="brand">بر اساس برند</button></div>
+  <div class="cc-tools"><input type="search" id="cc-search" placeholder="جستجوی نام یا کد کالا…" autocomplete="off" aria-label="جستجو"><button type="button" class="pill" id="cc-stockbtn">فقط موجود</button></div>
+  <div class="cc-crumbs" id="cc-crumbs"></div>
+  <div id="cc-body"></div>
+</section>
+<div class="searchbar" id="searchbar">
+  <div class="search-box">
+    <span class="ico" aria-hidden="true">🔍</span>
+    <input type="search" id="search-input" placeholder="جستجوی نام، کد کالا یا برند…"
+           autocomplete="off" enterkeyhint="search" aria-label="جستجو در کاتالوگ">
+    <button class="search-reset" id="search-reset" type="button" hidden aria-label="پاک کردن جستجو">✕</button>
+  </div>
+  <button class="filter-btn" id="btn-filters" type="button" aria-label="فیلتر و مرتب‌سازی">
+    <span aria-hidden="true">☰</span>
+    <span class="fb-label">فیلتر</span>
+    <span class="fb-count" id="filter-count" hidden>۰</span>
+  </button>
+</div>
+
+<!-- ============================ دسته‌بندی‌ها ============================ -->
+<nav class="catbar" id="catbar" aria-label="دسته‌بندی محصولات">
+  <div class="catbar-scroll" id="cat-chips"></div>
+</nav>
+
+<!-- ============================== برندها ============================== -->
+<nav class="brandbar" id="brandbar" aria-label="برندها">
+  <span class="brandbar-label">برندها</span>
+  <div class="brandbar-scroll" id="brand-chips"></div>
+</nav>
+
+<!-- ============================= نوار نتیجه ============================= -->
+<div class="resultbar" id="resultbar">
+  <div class="rb-title-wrap">
+    <h1 class="rb-title" id="result-title">همه محصولات</h1>
+    <span class="rb-count" id="result-count">۰ کالا</span>
+  </div>
+  <div class="rb-actions">
+    <button class="pill" id="chip-featured" type="button">⭐ ویژه</button>
+    <button class="pill" id="chip-fav" type="button">♥ علاقه‌مندی</button>
+  </div>
+</div>
+
+<!-- ============================== محصولات ============================== -->
+<main class="wrap" id="old-products">
+  <div class="grid" id="product-grid" aria-live="polite"></div>
+  <div class="load-more-wrap">
+    <button class="btn" id="btn-more" type="button" hidden>نمایش محصولات بیشتر</button>
+  </div>
+</main>
+
+<!-- =============================== فوتر =============================== -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="f-brand">
+      <span class="brand-badge" id="f-logo">HG</span>
+      <div>
+        <b id="f-brand-fa"></b>
+        <i id="f-brand-en"></i>
+      </div>
+    </div>
+    <p class="f-slogan" id="f-slogan"></p>
+    <p class="f-addr" id="f-address"></p>
+    <div class="f-links">
+      <a id="f-phone" href="#"></a>
+      <a id="f-mobile" href="#"></a>
+      <a id="f-email" href="#"></a>
+      <a id="f-site" href="#" target="_blank" rel="noopener">وب‌سایت</a>
+    </div>
+    <div class="f-actions">
+      <button class="btn btn-sm" id="f-pdf" type="button">📄 ساخت PDF</button>
+      <button class="btn btn-sm" id="f-print" type="button">🖨️ نمای چاپ</button>
+      <a class="btn btn-sm" href="admin/index.html">⚙️ پنل مدیریت</a>
+    </div>
+    <div class="f-bottom">
+      <span>© <span id="f-year"></span> کلیه حقوق برای صنایع برق و روشنایی هدایت گستر محفوظ است.</span>
+      <span class="f-storage" id="f-storage"></span>
+    </div>
+  </div>
+</footer>
+
+<button id="to-top" type="button" title="بازگشت به بالا" aria-label="بازگشت به بالا">↑</button>
+
+<!-- ============================ نوار مقایسه ============================ -->
+<div class="compare-bar" id="compare-bar" aria-label="نوار مقایسه کالاها">
+  <div class="cb-thumbs" id="compare-thumbs"></div>
+  <button class="btn btn-sm btn-primary" id="btn-do-compare" type="button">مقایسه</button>
+  <button class="btn btn-sm btn-ghost" id="btn-clear-compare" type="button">پاک</button>
+</div>
+
+<!-- ============================ شیت فیلترها ============================ -->
+<div class="overlay" id="filters-overlay">
+  <section class="sheet" role="dialog" aria-modal="true" aria-label="فیلتر و مرتب‌سازی">
+    <header class="sheet-head">
+      <span class="sheet-handle" aria-hidden="true"></span>
+      <h2>فیلتر و مرتب‌سازی</h2>
+      <button class="icon-btn" type="button" data-close="filters-overlay" aria-label="بستن">✕</button>
+    </header>
+    <div class="sheet-body" id="filters-body"></div>
+    <footer class="sheet-foot">
+      <button class="btn" id="btn-reset-filters" type="button">حذف فیلترها</button>
+      <button class="btn btn-primary" id="btn-apply-filters" type="button">
+        نمایش <span id="apply-count">۰</span> کالا
+      </button>
+    </footer>
+  </section>
+</div>
+
+<!-- =========================== شیت جزئیات کالا =========================== -->
+<div class="overlay" id="detail-overlay">
+  <section class="sheet sheet-full" id="detail-sheet" role="dialog" aria-modal="true" aria-label="جزئیات کالا"></section>
+</div>
+
+<!-- ============================ شیت مقایسه ============================ -->
+<div class="overlay" id="compare-overlay">
+  <section class="sheet sheet-full" id="compare-sheet" role="dialog" aria-modal="true" aria-label="مقایسه کالاها"></section>
+</div>
+
+<!-- ============================= شیت PDF ============================= -->
+<div class="overlay" id="pdf-overlay">
+  <section class="sheet" id="pdf-sheet" role="dialog" aria-modal="true" aria-label="خروجی PDF"></section>
+</div>
+
+<div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+<!-- ============================== اسکریپت‌ها ============================== -->
+<script src="data/seed.js"></script>
+<script src="data/seed-products.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="data/code-map.js"></script>
+<script src="data/excel-items.js"></script>
+<script src="assets/js/codes.js"></script>
+</body>
+</html>

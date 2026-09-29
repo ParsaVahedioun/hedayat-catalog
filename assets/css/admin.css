@@ -1,0 +1,218 @@
+/* =============================================================================
+   هدایت گستر | استایل پنل مدیریت کاتالوگ
+============================================================================= */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700; font-display: swap;
+}
+
+:root {
+  --p: #0B3D91;
+  --p2: #1E6BD6;
+  --accent: #F5A623;
+  --bg: #eef2f9;
+  --card: #ffffff;
+  --ink: #12203a;
+  --soft: #5d6d89;
+  --line: #dfe6f2;
+  --ok: #17a673;
+  --danger: #c0392b;
+  --radius: 14px;
+  --tr: cubic-bezier(.22,.61,.36,1);
+  --font: 'Vazirmatn', Tahoma, sans-serif;
+}
+* { box-sizing: border-box; }
+
+/* ---------------------------------------------------------------- محافظ hidden
+   بسیار مهم: قواعد کلاسی مثل «.login-wrap { display: grid }» هم‌سطح با
+   «[hidden] { display: none }» پیش‌فرض مرورگر هستند و چون بعد از آن می‌آیند
+   برنده می‌شوند؛ نتیجه اینکه بعد از ورود موفق، صفحه ورود پنهان نمی‌شد و روی
+   پنل مدیریت باقی می‌ماند. این قاعده تضمین می‌کند hidden همیشه پنهان کند. */
+[hidden] { display: none !important; }
+body {
+  margin: 0; font-family: var(--font); direction: rtl; text-align: right;
+  background: var(--bg); color: var(--ink); line-height: 1.85;
+}
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font-family: inherit; font-size: .95rem; }
+
+/* ----------------------------------------------------------- دروازه ورود */
+.login-wrap {
+  min-height: 100vh; display: grid; place-items: center; padding: 20px;
+  background: radial-gradient(900px 500px at 80% 0%, #1E6BD6, transparent 60%),
+              linear-gradient(150deg, #071f4a, #0B3D91 60%, #1550a8);
+}
+.login-card {
+  background: #fff; border-radius: 20px; padding: 28px; width: min(420px, 94vw);
+  box-shadow: 0 30px 70px rgba(0,0,0,.35); animation: pop .4s var(--tr);
+}
+@keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+.login-card h1 { margin: 0 0 6px; font-size: 1.25rem; color: var(--p); }
+.login-card p { margin: 0 0 18px; color: var(--soft); font-size: .88rem; }
+.login-card .hint { font-size: .8rem; color: var(--soft); margin-top: 12px; background: #f6f8fd; padding: 10px; border-radius: 10px; }
+
+/* --------------------------------------------------------------- چیدمان */
+.admin-header {
+  position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+  box-shadow: 0 4px 18px rgba(16,40,90,.06); flex-wrap: wrap;
+}
+.admin-header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--p); }
+.admin-header .badge {
+  width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--p), var(--p2) 65%, var(--accent));
+}
+.admin-header .sp { flex: 1; }
+.admin-layout { display: grid; grid-template-columns: 245px 1fr; gap: 20px; padding: 20px; align-items: start; }
+.admin-nav {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px;
+  position: sticky; top: 84px; box-shadow: 0 6px 20px rgba(16,40,90,.05);
+}
+.admin-nav button {
+  width: 100%; text-align: right; border: none; background: transparent; cursor: pointer;
+  padding: 10px 12px; border-radius: 10px; color: var(--soft); font-weight: 700; margin-bottom: 4px;
+  transition: .2s var(--tr);
+}
+.admin-nav button:hover { background: #f2f6fe; color: var(--ink); }
+.admin-nav button.active { background: linear-gradient(135deg, var(--p), var(--p2)); color: #fff; }
+.nav-sep { height: 1px; background: var(--line); margin: 8px 4px; }
+
+.panel-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px; box-shadow: 0 6px 20px rgba(16,40,90,.05); margin-bottom: 18px;
+}
+.panel-card h3 { margin: 0 0 14px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.panel-card h3 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.tab-page { display: none; }
+.tab-page.active { display: block; animation: fade .35s var(--tr); }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------------------------------------------------------------- فرم‌ها */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: .84rem; color: var(--soft); margin-bottom: 5px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: #fff; color: var(--ink); transition: .2s var(--tr);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--p2); box-shadow: 0 0 0 3px rgba(30,107,214,.14);
+}
+.field textarea { min-height: 90px; resize: vertical; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: .88rem; }
+.check input { width: auto; accent-color: var(--p2); }
+
+.btn {
+  border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 9px 15px;
+  border-radius: 10px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center;
+  gap: 7px; transition: .22s var(--tr);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,40,90,.12); }
+.btn-primary { background: linear-gradient(135deg, var(--p), var(--p2)); color: #fff; border-color: transparent; }
+.btn-accent { background: linear-gradient(135deg, var(--accent), #ffc861); color: #3a2700; border-color: transparent; }
+.btn-danger { background: #fdecea; color: var(--danger); border-color: #f5c6c0; }
+.btn-sm { padding: 6px 11px; font-size: .82rem; border-radius: 9px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* --------------------------------------------------------------- جدول‌ها */
+.table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+table.admin { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 720px; }
+table.admin th, table.admin td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: middle; }
+table.admin thead th { background: #f7f9fe; color: var(--soft); font-weight: 700; }
+table.admin tbody tr:hover { background: #fbfcff; }
+table.admin img.thumb { width: 52px; height: 42px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.pill { font-size: .74rem; padding: 3px 9px; border-radius: 999px; background: #eef3fd; color: var(--p2); }
+.pill.ok { background: #e6f8f1; color: var(--ok); }
+.pill.bad { background: #fdeceb; color: var(--danger); }
+
+/* ------------------------------------------------------- درخت دسته‌بندی */
+.cat-rows { display: grid; gap: 6px; }
+.cat-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 10px; background: #fff; font-size: .88rem;
+}
+.cat-row:hover { background: #fafcff; }
+.cat-row .nm { flex: 1; }
+.cat-row .row-actions { display: flex; gap: 6px; }
+
+/* ---------------------------------------------------------- آپلود تصویر */
+.drop {
+  border: 2px dashed var(--line); border-radius: 12px; padding: 16px; text-align: center;
+  color: var(--soft); font-size: .86rem; cursor: pointer; transition: .25s var(--tr); background: #fbfcff;
+}
+.drop.hover { border-color: var(--p2); background: #f2f7ff; }
+.thumbs-edit { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.thumb-edit { position: relative; width: 92px; height: 72px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.thumb-edit img { width: 100%; height: 100%; object-fit: cover; }
+.thumb-edit button {
+  position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: rgba(192,57,43,.9); color: #fff; cursor: pointer; font-size: .7rem;
+}
+
+/* ------------------------------------------------------------ توست/مودال */
+.toast-wrap { position: fixed; bottom: 20px; left: 20px; z-index: 500; display: grid; gap: 8px; }
+.toast {
+  background: #fff; border: 1px solid var(--line); border-inline-start: 5px solid var(--ok);
+  border-radius: 10px; padding: 10px 14px; box-shadow: 0 14px 34px rgba(16,40,90,.2); font-size: .86rem;
+  animation: tin .3s var(--tr); max-width: 330px;
+}
+.toast.err { border-inline-start-color: var(--danger); }
+.toast.warn { border-inline-start-color: var(--accent); }
+@keyframes tin { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(8,18,36,.6); z-index: 400;
+  display: grid; place-items: center; padding: 18px; opacity: 0; pointer-events: none;
+  transition: opacity .28s var(--tr);
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: #fff; border-radius: 18px; width: min(560px, 96vw); max-height: 90vh; overflow: auto;
+  box-shadow: 0 30px 70px rgba(0,0,0,.35); transform: translateY(16px); transition: transform .3s var(--tr);
+}
+.overlay.open .modal { transform: none; }
+.modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.modal-head h3 { margin: 0; font-size: 1rem; }
+.modal-head .sp { flex: 1; }
+.modal-body { padding: 18px; }
+
+/* ------------------------------------------------------------------ آمار */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.stat-card {
+  background: linear-gradient(135deg, #fff, #f7faff); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px; text-align: center; transition: .25s var(--tr);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(16,40,90,.1); }
+.stat-card b { display: block; font-size: 1.7rem; color: var(--p); }
+.stat-card span { font-size: .82rem; color: var(--soft); }
+.note {
+  background: #fff8e8; border: 1px solid #f6dfae; color: #7a5b12; border-radius: 12px;
+  padding: 12px 14px; font-size: .86rem;
+}
+.spec-row {
+  display: grid; grid-template-columns: 1.1fr 1.4fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px;
+}
+.spec-row input, .spec-row select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; width: 100%; }
+.feat-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px; }
+.feat-row input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; }
+.chip-add { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip-item {
+  background: #eef3fd; border: 1px solid #d6e2f8; color: var(--p2); border-radius: 999px;
+  padding: 5px 12px; font-size: .84rem; display: inline-flex; align-items: center; gap: 7px;
+}
+.chip-item button { border: none; background: transparent; color: var(--danger); cursor: pointer; font-weight: 700; }
+
+@media (max-width: 900px) {
+  .admin-layout { grid-template-columns: 1fr; }
+  .admin-nav { position: static; }
+  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+  .spec-row { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نمای چاپ و خروجی PDF | کاتالوگ هدایت گستر</title>
+<link rel="stylesheet" href="assets/css/print.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="toolbar-print no-print">
+  <b>📄 نمای چاپ کاتالوگ</b>
+  <span id="tp-info" class="tp-info"></span>
+  <span class="sp"></span>
+  <div class="tp-group" role="group" aria-label="حالت نمایش">
+    <button id="tp-mode-compact" type="button">فشرده (برند + کالا)</button>
+    <button id="tp-mode-detail" type="button">کامل (توضیحات)</button>
+  </div>
+  <div class="tp-group" id="tp-per-group" role="group" aria-label="تعداد کالا در صفحه">
+    <button id="tp-per1" type="button">۱ در صفحه</button>
+    <button id="tp-per2" type="button">۲ در صفحه</button>
+  </div>
+  <div class="tp-group" role="group" aria-label="جهت صفحه">
+    <button id="tp-portrait" type="button">A4 عمودی</button>
+    <button id="tp-landscape" type="button">A4 افقی</button>
+  </div>
+  <button class="primary" id="tp-print" type="button">🖨️ چاپ / ذخیره PDF</button>
+  <a class="back" href="index.html">بازگشت به کاتالوگ</a>
+</div>
+
+<div id="sheets"><div class="loading">در حال آماده‌سازی کاتالوگ…</div></div>
+
+<script src="data/seed.js"></script>
+<script src="data/seed-products.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/print.js"></script>
+</body>
+</html>
