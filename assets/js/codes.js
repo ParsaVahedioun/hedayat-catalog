@@ -120,6 +120,22 @@
     }
     return '';
   }
+  /* ایکون نوع کالا (برای نوع و زیردسته‌ی آن) و لوگوی برند (برای برند) */
+  var TI = window.HG_TYPE_ICONS, BL = window.HG_BRAND_LOGOS;
+  function tileIcon(d, items, k) {
+    if (d === 't' && TI) {
+      var a = TI.svg(k, 26); return a ? '<span class="cc-ic">' + a + '</span>' : '';
+    }
+    if (d === 'sub' && TI && st.sel.t != null) {          /* زیردسته: ایکون همان نوع کالا */
+      var b = TI.svg(st.sel.t, 26); return b ? '<span class="cc-ic">' + b + '</span>' : '';
+    }
+    if (d === 'b' && BL) {
+      var src = BL.fallback, own = false;
+      items.forEach(function (p) { if (!own && BL.isOwn(p.b)) { src = BL.forCode(p.b); own = true; } });
+      return '<span class="cc-logo' + (own ? '' : ' hg') + '"><img src="' + esc(src) + '" alt="" loading="lazy"></span>';
+    }
+    return '';
+  }
   function minCode(items) {
     var m = '99';
     items.forEach(function (p) { if (p.b < m) { m = p.b; } });
@@ -198,10 +214,10 @@
           html += '<button type="button" class="cc-all" data-all="1">مشاهده همه (' + fa(list.length) + ' کالا)</button>';
         }
         html += '<div class="cc-grid">' + keys.map(function (k) {
-          var sub = tileSub(next, g[k], k);
-          return '<button type="button" class="cc-tile" data-dim="' + next + '" data-k="' + esc(k) + '">' +
-            '<b>' + esc(labelOf(next, k)) + '</b>' + (sub ? '<i>' + esc(sub) + '</i>' : '') +
-            '<span>' + fa(g[k].length) + ' کالا</span></button>';
+          var sub = tileSub(next, g[k], k), ic = tileIcon(next, g[k], k);
+          return '<button type="button" class="cc-tile' + (ic ? ' has-ic' : '') + '" data-dim="' + next + '" data-k="' + esc(k) + '">' +
+            ic + '<span class="cc-tx"><b>' + esc(labelOf(next, k)) + '</b>' + (sub ? '<i>' + esc(sub) + '</i>' : '') +
+            '<span class="cc-n">' + fa(g[k].length) + ' کالا</span></span></button>';
         }).join('') + '</div>';
       } else {
         showList = true;

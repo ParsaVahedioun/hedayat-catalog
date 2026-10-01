@@ -49,8 +49,29 @@
       '<span>صفحه ' + fa(pageNo) + '</span></div>';
   }
 
+  /* ------------------------------------------- جلد و صفحه‌های مقدمه (تصویری)
+     برای کاتالوگ کامل: صفحه ۱ = جلد، صفحه ۲ و ۳ = مقدمه (تصویر). فهرست و کالاها بعد از آن‌ها
+     می‌آیند و شماره‌ی صفحه‌ها به‌اندازه‌ی INTRO صفحه جلو می‌روند.
+     تصویرها: assets/img/intro/cover.jpg ، p2.jpg ، p3.jpg (A4 افقی) */
+  var INTRO = 0, TI = window.HG_TYPE_ICONS, BL = window.HG_BRAND_LOGOS;
+  function imgSheet(src) {
+    return '<section class="sheet img-sheet"><img src="' + src + '" alt=""></section>';
+  }
+  function introSheets() {
+    return imgSheet('assets/img/intro/cover.jpg') + imgSheet('assets/img/intro/p2.jpg') + imgSheet('assets/img/intro/p3.jpg');
+  }
+  function tIcon(t, sz) {
+    var c = String(t.id || '').replace('code-', '');
+    var v = TI ? TI.svg(c, sz) : '';
+    return v ? '<span class="ix-ic">' + v + '</span>' : '';
+  }
+  function bLogo(name, cls) {
+    return BL ? '<img class="' + cls + '" src="' + BL.forName(name) + '" alt="">' : '';
+  }
+
   /* --------------------------------------------------------------- جلد */
   function coverSheet(st) {
+    if (INTRO) { return introSheets(); }
     var today = '';
     try { today = new Date().toLocaleDateString('fa-IR'); } catch (e) { today = ''; }
     return '<section class="sheet cover' + (ORIENT === 'landscape' ? ' landscape' : '') + '">' +
@@ -70,7 +91,7 @@
 
   /* --------------------------------------------------- فهرست مطالب */
   function tocSheet(st) {
-    var startPage = 3, items = '', lastGroup = '';
+    var startPage = 3 + INTRO, items = '', lastGroup = '';
     LIST.forEach(function (p, i) {
       var g = mainCat(p);
       if (g !== lastGroup) {
@@ -82,7 +103,7 @@
     });
     return '<section class="sheet toc' + (ORIENT === 'landscape' ? ' landscape' : '') + '" id="idx-toc">' +
       '<h1>فهرست مطالب</h1><ol>' + items + '</ol>' +
-      foot(st, 2) + '</section>';
+      foot(st, 2 + INTRO) + '</section>';
   }
 
   /* ---------------------------------------------------- بلوک یک کالا */
@@ -214,7 +235,7 @@
     m.brandPages = paginate(m.brands, function (g) { return 9 + 6.5 * Math.ceil(g.refs.length / CHIPS); }, CAP);
     m.noIndex = !(TOC && LIST.length > 1);
     if (m.noIndex) { m.typePages = []; m.brandPages = []; }
-    m.startPage = 2 + m.typePages.length + m.brandPages.length;
+    m.startPage = 2 + INTRO + m.typePages.length + m.brandPages.length;
 
     /* چیدمان صفحه‌های کالا با شبیه‌ساز ارتفاع: عنوان نوع → صفحه‌ی جدید */
     var COLS = LAND() ? 4 : 3, ROW = LAND() ? 64 : 67, CAP2 = LAND() ? 158 : 246;
@@ -272,13 +293,13 @@
       var curT = '', inner = items.map(function (it) {
         if (it.type === 'type') {
           curT = it.t.title;
-          return '<div class="c-type" id="' + it.t.anchor + '"><h1>' + esc(it.t.title) + '</h1>' +
+          return '<div class="c-type" id="' + it.t.anchor + '"><h1>' + tIcon(it.t, 22) + esc(it.t.title) + '</h1>' +
             '<i>' + fa(it.t.n) + ' کالا • ' + fa(it.t.brands.length) + ' برند</i>' +
             '<div class="chips">' + chipsHTML(it.t.brands, function (b) { return b.anchor; },
               function (b) { return b.name; }, function (b) { return b.items.length; }) + '</div></div>';
         }
         if (it.type === 'brand' || it.type === 'cont') {
-          return '<h2 class="c-brand" ' + (it.type === 'brand' ? 'id="' + it.b.anchor + '"' : '') + '><span>' + esc(it.b.name) + '</span>' +
+          return '<h2 class="c-brand" ' + (it.type === 'brand' ? 'id="' + it.b.anchor + '"' : '') + '><span>' + bLogo(it.b.name, 'c-logo') + esc(it.b.name) + '</span>' +
             '<i>' + fa(it.b.items.length) + ' کالا' + (it.type === 'cont' ? ' — ادامه' : '') + '</i>' +
             '<a class="up" href="#' + it.b.t.anchor + '">↑ ' + esc(it.b.t.title) + '</a></h2>';
         }
@@ -292,7 +313,7 @@
 
   /* فهرست ۱: نوع کالا ← برندها  |  فهرست ۲: برند ← انواع کالا */
   function indexSheets(plan, st) {
-    var cls = 'sheet toc idx-sheet' + (LAND() ? ' landscape' : ''), out = '', pageNo = 2;
+    var cls = 'sheet toc idx-sheet' + (LAND() ? ' landscape' : ''), out = '', pageNo = 2 + INTRO;
     var tabs = function (on) {
       return '<div class="idx-tabs"><a class="' + (on === 't' ? 'on' : '') + '" href="#idx-types">بر اساس نوع کالا</a>' +
         '<a class="' + (on === 'b' ? 'on' : '') + '" href="#idx-brands">بر اساس برند</a></div>';
@@ -302,7 +323,7 @@
         '<h1>فهرست بر اساس نوع کالا</h1>' + tabs('t') +
         '<p class="toc-note">' + fa(plan.types.length) + ' نوع کالا • ' + fa(LIST.length) + ' کالا — روی نوع کالا یا برند بزنید</p>' +
         rows.map(function (t) {
-          return '<div class="ix-row"><a class="ix-main" href="#' + t.anchor + '"><b>' + esc(t.title) + '</b>' +
+          return '<div class="ix-row"><a class="ix-main" href="#' + t.anchor + '">' + tIcon(t, 17) + '<b>' + esc(t.title) + '</b>' +
             '<i>' + fa(t.n) + ' کالا</i><span class="dots"></span><em>ص ' + fa(t.page) + '</em></a>' +
             '<div class="chips">' + chipsHTML(t.brands, function (b) { return b.anchor; },
               function (b) { return b.name; }, function (b) { return b.items.length; }) + '</div></div>';
@@ -313,7 +334,7 @@
         '<h1>فهرست بر اساس برند</h1>' + tabs('b') +
         '<p class="toc-note">' + fa(plan.brands.length) + ' برند — پس از انتخاب برند فقط انواع کالای همان برند نمایش داده می‌شود</p>' +
         rows.map(function (g) {
-          return '<div class="ix-row"><a class="ix-main" href="#' + (g.refs[0] ? g.refs[0].anchor : 'idx-types') + '"><b>' + esc(g.name) + '</b>' +
+          return '<div class="ix-row"><a class="ix-main" href="#' + (g.refs[0] ? g.refs[0].anchor : 'idx-types') + '">' + bLogo(g.name, 'ix-logo') + '<b>' + esc(g.name) + '</b>' +
             '<i>' + fa(g.n) + ' کالا</i><span class="dots"></span><em>ص ' + fa(g.page) + '</em></a>' +
             '<div class="chips">' + chipsHTML(g.refs, function (b) { return b.anchor; },
               function (b) { return b.t.title; }, function (b) { return b.items.length; }) + '</div></div>';
@@ -330,7 +351,7 @@
       el.id = 'page-size';
       document.head.appendChild(el);
     }
-    el.textContent = '@page { size: A4 ' + (ORIENT === 'landscape' ? 'landscape' : 'portrait') + '; margin: 0; }';
+    el.textContent = '@page { size: A4 ' + (ORIENT === 'landscape' ? 'landscape' : 'portrait') + '; margin: 0; } @page imgland { size: A4 landscape; margin: 0; }';
   }
 
   /* ------------------------------------------------------ انتخاب کالاها */
@@ -351,6 +372,7 @@
     var st = S.data.settings || {};
     var hasToc = TOC && LIST.length > 1;
     var mode = resolvedMode();
+    INTRO = (LIST.length > 1 && SRC !== 'compare') ? 2 : 0;
 
     applyPageSize();
 
@@ -365,7 +387,7 @@
     } else {
       /* حالت کامل: توضیحات، ویژگی‌ها و جدول مشخصات فنی */
       if (hasToc) { out += tocSheet(st); }
-      var startPage = hasToc ? 3 : 2;
+      var startPage = (hasToc ? 3 : 2) + INTRO;
       for (var i = 0; i < LIST.length; i += PER) {
         var pageNo = startPage + Math.floor(i / PER);
         var chunk = LIST.slice(i, i + PER);
