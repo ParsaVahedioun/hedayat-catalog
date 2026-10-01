@@ -174,7 +174,8 @@
       '<div class="cc-code" dir="ltr" title="نوع ' + p.t + ' | تخصصی ' + p.sp + ' | برند ' + p.b + '">' +
       p.code.slice(0, 3) + '<u>' + p.sp + '</u>' + p.code[5] + '<em>' + p.b + '</em></div>' +
       '<div class="cc-meta"><span>' + esc(p.tn) + '</span>' + (p.sub ? '<span>' + esc(p.sub) + '</span>' : '') +
-      '<span>' + esc(p.bn) + '</span>' + (p.col ? '<span>' + esc(p.col) + '</span>' : '') + '</div></div>' + (ok ? 'ok' : 'off') + '">' + (ok ? fa(p.stock) + ' ' + esc(p.unit) : 'ناموجود') + '</span></article>';
+      '<span>' + esc(p.bn) + '</span>' + (p.col ? '<span>' + esc(p.col) + '</span>' : '') + '</div></div>' +
+      '<span class="cc-stock ' + '</span></article>';
   }
 
   function render() {
