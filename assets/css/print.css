@@ -234,3 +234,29 @@ table.specs tr:nth-child(even) td { background: #fcfdff; }
   .p-foot { position: static; margin-top: 6mm; }
   .c-grid, .compact-sheet.landscape .c-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ===== لینک‌های داخلی PDF: فهرست‌ها، ناوبری و فیلتر اولیه ===== */
+.toolbar-print select{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 8px;font-family:inherit;font-size:.8rem;font-weight:700;max-width:170px}
+.tp-filters select+select{border-inline-start:1px solid var(--line)}.tp-filters select{border:0}
+.sheet a{color:inherit;text-decoration:none}
+.p-nav{display:flex;gap:3mm;align-items:center;margin:-3mm 0 4mm;padding-bottom:2mm;border-bottom:1px solid var(--line);font-size:8.5pt}
+.p-nav a{color:var(--p2);font-weight:700;padding:.6mm 3mm;border:1px solid var(--line);border-radius:99px;background:#f7f9fe}
+.c-type{grid-column:1/-1;padding:0 0 2mm;border-bottom:2.2px solid var(--accent);margin-bottom:1mm}
+.c-type h1{margin:0;font-size:19pt;color:var(--p);display:inline}
+.c-type>i{font-style:normal;font-size:9pt;color:var(--soft);margin-inline-start:4mm}
+.c-brand .up{margin-inline-start:auto;font-size:8pt;color:var(--p2);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:1.6mm;margin-top:2.2mm}
+.chip{display:inline-flex;align-items:baseline;gap:1.6mm;padding:.5mm 2.8mm;border:1px solid #c8d6f0;border-radius:99px;background:#f2f6fd;color:var(--p)!important;font-size:8.5pt;font-weight:700}
+.chip i{font-style:normal;font-weight:400;font-size:7.5pt;color:var(--soft)}
+.idx-sheet .ix-row{padding:1.6mm 0;border-bottom:1px dotted var(--line)}
+.idx-sheet .ix-main{display:flex;align-items:baseline;gap:3mm;font-size:11pt}
+.idx-sheet .ix-main b{color:var(--p)}.idx-sheet .ix-main i{font-style:normal;font-size:8.5pt;color:var(--soft)}
+.idx-sheet .ix-main .dots{flex:1;border-bottom:1px dotted #c8d4e8}.idx-sheet .ix-main em{font-style:normal;font-size:8.5pt;color:var(--soft)}
+.idx-sheet h1{margin-bottom:3mm}
+.idx-tabs{display:flex;gap:0;margin-bottom:3mm}
+.idx-tabs a{flex:1;text-align:center;padding:2mm;border:1.5px solid var(--p);font-weight:700;font-size:10.5pt;color:var(--p)}
+.idx-tabs a:first-child{border-radius:0 3mm 3mm 0}.idx-tabs a:last-child{border-radius:3mm 0 0 3mm;border-inline-start:0}
+.idx-tabs a.on{background:var(--p);color:#fff}
+.toc li:has(.toc-link)::before{align-self:center}.toc .toc-link{display:flex;flex:1;align-items:baseline;gap:3mm}
+
+.c-ph{font-size:26pt;font-weight:700;color:#b7c6e4}
