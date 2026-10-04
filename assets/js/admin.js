@@ -613,7 +613,7 @@
       'instagram', 'catalogTitle', 'catalogSubtitle', 'priceLabel'].forEach(function (k) {
         var el = $('s-' + k); if (el) { el.value = s[k] || ''; }
       });
-    $('s-themePrimary').value = s.themePrimary || '#0B3D91';
+    $('s-themePrimary').value = s.themePrimary || '#d3b81e';
     $('s-themeAccent').value = s.themeAccent || '#F5A623';
     $('s-pdfOrientation').value = s.pdfOrientation || 'portrait';
     $('s-showPrices').checked = !!s.showPrices;

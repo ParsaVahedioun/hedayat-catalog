@@ -76,8 +76,8 @@
   function applySettings() {
     var s = S.data.settings || {};
     var root = document.documentElement;
-    root.style.setProperty('--primary', s.themePrimary || '#0B3D91');
-    root.style.setProperty('--primary-2', lighten(s.themePrimary || '#0B3D91', 0.28));
+    root.style.setProperty('--primary', s.themePrimary || '#c0bd1e');
+    root.style.setProperty('--primary-2', lighten(s.themePrimary || '#c9c621', 0.28));
     root.style.setProperty('--accent', s.themeAccent || '#F5A623');
 
     var set = function (id, val) { var el = $(id); if (el) { el.textContent = val == null ? '' : val; } };
@@ -709,9 +709,20 @@
       if (md === 'auto' && ids && ids === state.compare.join(',')) { src = 'compare'; }
     } catch (e) {}
 
-    var url = 'print.html?ids=' + encodeURIComponent(idsParam) +
-      '&per=' + per + '&orient=' + orient + '&toc=' + toc + '&mode=' + md +
-      (src ? '&src=' + src : '') + (auto ? '&auto=1' : '');
+    /* آدرس کوتاه: اگر همه‌ی کالاها انتخاب شده‌اند فقط ids=all؛ در غیر این صورت فهرست شناسه‌ها
+       داخل hash (#ids=...) می‌رود. hash هرگز به سرور فرستاده نمی‌شود، پس خطای «URL too large» نمی‌دهد. */
+    var idList = idsParam.split(',');
+    var totalAll = (S.data.products || []).length;
+    var queryIds = 'all', hashIds = '';
+    var isAll = totalAll > 0 && idList.length === totalAll && idList.every(function (id) { return !!S.product(id); });
+    if (!isAll) {
+      if (idList.length <= 8) { queryIds = encodeURIComponent(idsParam); }
+      else { queryIds = ''; hashIds = idsParam; }
+    }
+    var url = 'print.html?' + (queryIds ? 'ids=' + queryIds + '&' : '') +
+      'per=' + per + '&orient=' + orient + '&toc=' + toc + '&mode=' + md +
+      (src ? '&src=' + src : '') + (auto ? '&auto=1' : '') +
+      (hashIds ? '#ids=' + hashIds : '');
 
     var win = null;
     try { win = window.open(url, '_blank'); } catch (e) { win = null; }

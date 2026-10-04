@@ -87,7 +87,7 @@
       code: c, name: nm, stock: a[2], unit: a[3], img: a[4],
       t: t, sp: c.slice(3, 5), b: b,
       bn: M.brands[b] || ('برند ' + fa(b)), tn: M.types[t] || ('گروه ' + fa(t)),
-      col: /^1[0-7]$/.test(t) ? (M.colors[d6] || '') : '',
+      col: /^1[0-7]$/.test(t) ? (M.colors[d6] || '') : '', cd: d6,
       sub: subOf(t, nm), spec: specOf(t, nm),
       q: norm(nm) + ' ' + c
     };
@@ -127,7 +127,7 @@
       var a = TI.svg(k, 26); return a ? '<span class="cc-ic">' + a + '</span>' : '';
     }
     if (d === 'sub' && TI && st.sel.t != null) {          /* زیردسته: ایکون همان نوع کالا */
-      var b = TI.svg(st.sel.t, 26); return b ? '<span class="cc-ic">' + b + '</span>' : '';
+      var b = TI.svgSub ? TI.svgSub(st.sel.t, k, 26) : TI.svg(st.sel.t, 26); return b ? '<span class="cc-ic">' + b + '</span>' : '';
     }
     if (d === 'b' && BL) {
       var src = BL.fallback, own = false;
@@ -166,16 +166,128 @@
     return n;
   }
 
+  /* دایره‌ی رنگ لامپ بر اساس کد رنگ (رقم ۶ کد کالا) */
+  function swatch(d6) {
+    var h = (M.colorHex || {})[d6];
+    return h ? '<i class="cc-sw" style="background:' + esc(h) + '"></i>' : '';
+  }
+
   function itemHTML(p) {
     var ok = p.stock > 0;
-    return '<article class="cc-item">' +
+    return '<article class="cc-item" data-code="' + p.code + '" tabindex="0" role="button" aria-label="جزئیات کالا">' +
       (p.img ? '<img src="' + esc(p.img) + '" alt="" loading="lazy">' : '<div class="cc-noimg">' + esc(p.tn.charAt(0)) + '</div>') +
       '<div class="cc-info"><h3>' + esc(p.name) + '</h3>' +
       '<div class="cc-code" dir="ltr" title="نوع ' + p.t + ' | تخصصی ' + p.sp + ' | برند ' + p.b + '">' +
       p.code.slice(0, 3) + '<u>' + p.sp + '</u>' + p.code[5] + '<em>' + p.b + '</em></div>' +
       '<div class="cc-meta"><span>' + esc(p.tn) + '</span>' + (p.sub ? '<span>' + esc(p.sub) + '</span>' : '') +
-      '<span>' + esc(p.bn) + '</span>' + (p.col ? '<span>' + esc(p.col) + '</span>' : '') + '</div></div>' +
+      '<span>' + esc(p.bn) + '</span>' + (p.col ? '<span class="cc-colr">' + swatch(p.cd) + esc(p.col) + '</span>' : '') + '</div></div>' +
       '<span class="cc-stock ' + (ok ? 'ok' : 'off') + '">' + '</span></article>';
+  }
+
+  /* ---- فهرست فعلی بر اساس فیلترها/جستجو (همان چیزی که کاربر می‌بیند؛ مبنای خروجی PDF) ---- */
+  function filteredList() {
+    var q = norm(st.q).trim(), list;
+    if (q) { return data.filter(function (p) { return q.split(/\s+/).every(function (w) { return p.q.indexOf(w) > -1; }); }); }
+    list = data.slice();
+    dims().forEach(function (d) {
+      if (st.sel[d] != null) { list = list.filter(function (p) { return keyOf(d, p) === st.sel[d]; }); }
+    });
+    return list;
+  }
+  function isFiltered() {
+    return !!norm(st.q).trim() || dims().some(function (d) { return st.sel[d] != null; });
+  }
+
+  /* ---- ویژگی‌ها از روی نام کالا ---- */
+  function nameFeatures(name) {
+    var s = String(name), n = norm(name), rows = [], m;
+    var add = function (l, v) { if (v) { rows.push([l, v]); } };
+    m = n.match(/(\d+(?:\.\d+)?)\s*(?:وات|w\b)/); add('توان', m && fa(m[1]) + ' وات');
+    m = s.match(/\b(E27|E14|E40|B22|GU10|GU5\.3|MR16|G9|G4|G13|G23|2G11|GX53)\b/i); add('پایه / سرپیچ', m && m[1].toUpperCase());
+    m = n.match(/(\d+)\s*ولت/); add('ولتاژ', m && fa(m[1]) + ' ولت');
+    m = n.match(/(\d+(?:\/\d+)?)\s*آمپر/); add('جریان', m && fa(m[1]) + ' آمپر');
+    m = n.match(/(\d+(?:\/\d+)?)\s*\*\s*(\d+)/); add('ابعاد / مقطع', m && fa(m[1]) + '×' + fa(m[2]));
+    m = n.match(/(\d+)\s*سانتی/); add('طول', m && fa(m[1]) + ' سانتی‌متر');
+    m = n.match(/(\d+)\s*متر(?!ی)/); add('طول', m && fa(m[1]) + ' متر');
+    m = n.match(/(?:(\d+)|(تک|یک|دو|سه|چهار|پنج|شش))\s*خانه/);
+    if (m) { var W = { 'تک': 1, 'یک': 1, 'دو': 2, 'سه': 3, 'چهار': 4, 'پنج': 5, 'شش': 6 }; add('تعداد خانه', fa(m[1] ? m[1] : W[m[2]])); }
+    m = n.match(/(\d+)\s*زوجی/); add('تعداد زوج', m && fa(m[1]));
+    m = s.match(/\bIP\s?(\d{2})\b/i); add('درجه حفاظت', m && 'IP' + m[1]);
+    var tech = []; ['LED', 'SMD', 'COB', 'DOB'].forEach(function (k) { if (new RegExp('\\b' + k + '\\b', 'i').test(s)) { tech.push(k); } });
+    add('فناوری', tech.join(' / '));
+    return rows;
+  }
+
+  /* ---- پنجره‌ی جزئیات کالا (با کلیک روی کالا) ---- */
+  function closeDetail() {
+    var o = $('cc-detail-overlay'); if (!o) { return; }
+    o.classList.remove('open'); document.body.style.overflow = o._prevOv || '';
+  }
+  function ensureDetail() {
+    var o = $('cc-detail-overlay'); if (o) { return o; }
+    o = document.createElement('div'); o.className = 'overlay'; o.id = 'cc-detail-overlay';
+    o.innerHTML = '<section class="sheet sheet-full" id="cc-detail-sheet" role="dialog" aria-modal="true" aria-label="جزئیات کالا"></section>';
+    document.body.appendChild(o);
+    o.addEventListener('click', function (e) {
+      if (e.target === o || e.target.closest('[data-ccd-close]')) { closeDetail(); }
+      var pdf = e.target.closest('[data-ccd-pdf]');
+      if (pdf) { window.open('print.html?ids=' + encodeURIComponent('p-' + pdf.getAttribute('data-ccd-pdf')) + '&mode=detail&toc=0', '_blank'); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDetail(); } });
+    return o;
+  }
+  function tr(l, v) { return '<tr><th>' + esc(l) + '</th><td>' + v + '</td></tr>'; }
+  function openDetail(code) {
+    var p = null; data.some(function (x) { if (x.code === code) { p = x; return true; } return false; });
+    if (!p) { return; }
+    var HGS = window.HG && window.HG.store, sp = null;
+    try { sp = HGS && HGS.product ? HGS.product('p-' + code) : null; } catch (e) { sp = null; }
+    var hex = (M.colorHex || {})[p.cd], hasCol = !!(p.col && hex);
+
+    var ident = tr('نوع کالا', '<b>' + esc(p.tn) + '</b><small dir="ltr">' + p.t + '</small>') +
+      (p.sub ? tr('نوع (زیردسته)', '<b>' + esc(p.sub) + '</b>') : '') +
+      (p.spec ? tr('توان / مشخصه', '<b>' + esc(p.spec.label) + '</b>') : '') +
+      (p.col ? tr('رنگ نور', '<span class="ccd-colorbadge">' + swatch(p.cd) + esc(p.col) + '</span><small dir="ltr">' + p.cd + '</small>') : '') +
+      tr('برند', '<b>' + esc(p.bn) + '</b><small dir="ltr">' + p.b + '</small>') +
+      tr('کد تخصصی', '<small dir="ltr" style="margin:0">' + p.sp + '</small>') +
+      (p.unit ? tr('واحد', esc(p.unit)) : '');
+
+    var feats = nameFeatures(p.name).map(function (r) { return tr(r[0], '<b>' + esc(r[1]) + '</b>'); }).join('');
+
+    var extra = '';
+    if (sp) {
+      if ((sp.features || []).length) {
+        extra += '<section class="ccd-sec"><h3>ویژگی‌ها</h3><ul class="ccd-feats">' +
+          sp.features.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul></section>';
+      }
+      if (sp.summary) { extra += '<section class="ccd-sec"><p class="ccd-desc">' + esc(sp.summary) + '</p></section>'; }
+      if (sp.description) { extra += '<section class="ccd-sec"><h3>توضیحات</h3><p class="ccd-desc">' + esc(sp.description) + '</p></section>'; }
+      var rows = [];
+      try { rows = (HGS.specRows ? HGS.specRows(sp) : []) || []; } catch (e) { rows = []; }
+      if (rows.length) {
+        extra += '<section class="ccd-sec"><h3>مشخصات فنی</h3><table class="ccd-tbl"><tbody>' + rows.map(function (r) {
+          return tr(r.label, esc(r.value) + (r.unit && r.unit !== 'IP' ? ' <small>' + esc(r.unit) + '</small>' : ''));
+        }).join('') + '</tbody></table></section>';
+      }
+    }
+
+    var html = '<header class="sheet-head"><span class="sheet-handle" aria-hidden="true"></span><h2>' + esc(p.name) + '</h2>' +
+      '<button class="icon-btn" type="button" data-ccd-close="1" aria-label="بستن">✕</button></header>' +
+      '<div class="sheet-body">' +
+      '<div class="ccd-gal">' + (p.img ? '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '">' : '<div class="ccd-ph">' + esc(p.tn.charAt(0)) + '</div>') + '</div>' +
+      '<div class="ccd-code"><div class="cc-code" dir="ltr">' + p.code.slice(0, 3) + '<u>' + p.sp + '</u>' + p.code[5] + '<em>' + p.b + '</em></div>' +
+      (hasCol ? '<span class="ccd-colorbadge">' + swatch(p.cd) + esc(p.col) + '</span>' : '') + '</div>' +
+      '<section class="ccd-sec"><h3>مشخصات کالا (بر اساس کد ۸ رقمی)</h3><table class="ccd-tbl"><tbody>' + ident + '</tbody></table></section>' +
+      (feats ? '<section class="ccd-sec"><h3>ویژگی‌ها (از نام کالا)</h3><table class="ccd-tbl"><tbody>' + feats + '</tbody></table></section>' : '') +
+      extra +
+      '<div class="ccd-actions"><button type="button" class="btn btn-sm btn-accent" data-ccd-pdf="' + p.code + '">📄 PDF این کالا</button>' +
+      '<button type="button" class="btn btn-sm" data-ccd-close="1">بستن</button></div></div>';
+
+    var o = ensureDetail(), sh = $('cc-detail-sheet');
+    sh.innerHTML = html;
+    o._prevOv = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    var body = sh.querySelector('.sheet-body'); if (body) { body.scrollTop = 0; }
+    requestAnimationFrame(function () { o.classList.add('open'); });
   }
 
   function render() {
@@ -252,6 +364,8 @@
   function init() {
     var el = $('code-catalog'); if (!el) { return; }
     el.addEventListener('click', function (e) {
+      var it = e.target.closest('.cc-item');
+      if (it && !e.target.closest('button')) { openDetail(it.getAttribute('data-code')); return; }
       var t = e.target.closest('button'); if (!t) { return; }
       if (t.classList.contains('cc-tab')) {
         st.mode = t.dataset.mode;
@@ -260,10 +374,13 @@
       }
       else if (t.id === 'cc-back') { back(); return; }
       else if (t.id === 'cc-more') { st.page++; }
-      else if (t.id === 'cc-pdfbtn') {                    /* PDF لینک‌دار؛ فیلتر فعلی (نوع/برند) */
-        var u = 'print.html?ids=all&mode=compact';
-        if (st.sel.t != null) { u += '&type=code-' + encodeURIComponent(st.sel.t); }
-        if (st.sel.b != null) { u += '&brand=' + encodeURIComponent(st.sel.b); }
+      else if (t.id === 'cc-pdfbtn') {                    /* PDF دقیقاً بر اساس فیلتر/جستجوی فعلی */
+        var rows = filteredList().sort(function (a, b) { return a.code < b.code ? -1 : a.code > b.code ? 1 : 0; });
+        if (!rows.length) { return; }
+        /* شناسه‌ها داخل hash می‌روند (به سرور فرستاده نمی‌شوند) تا آدرس بزرگ نشود.
+           filtered=1: فهرست انواع/برندها فقط در خروجی «کل کاتالوگ» چاپ می‌شود. */
+        var u = 'print.html?mode=compact&toc=1' + (isFiltered() ? '&filtered=1' : '') +
+          '#ids=' + rows.map(function (p) { return 'p-' + p.code; }).join(',');
         window.open(u, '_blank'); return;
       }
       else if (t.dataset.all) { st.showAll = true; st.page = 1; }
@@ -272,6 +389,10 @@
         st.showAll = false; st.page = 1; window.scrollTo(0, 0);
       } else { return; }
       render();
+    });
+    el.addEventListener('keydown', function (e) {
+      var it = e.target.closest && e.target.closest('.cc-item');
+      if (it && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetail(it.getAttribute('data-code')); }
     });
     var s = $('cc-search'), tm;
     s.addEventListener('input', function () { clearTimeout(tm); tm = setTimeout(function () { st.q = s.value; st.page = 1; render(); }, 200); });

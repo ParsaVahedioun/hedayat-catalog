@@ -24,7 +24,7 @@
     address: 'اصفهان — دفتر مرکزی فروش و انبار',
     site: 'https://hedayatgostar.com',
     instagram: '',
-    themePrimary: '#0B3D91',
+    themePrimary: '#e4af1e',
     themeAccent: '#F5A623',
     themeMode: 'light',
     showPrices: false,

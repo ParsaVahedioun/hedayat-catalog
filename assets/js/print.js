@@ -18,12 +18,16 @@
   var S = HG.store, U = HG.util;
 
   var q = new URLSearchParams(location.search);
-  var IDS = (q.get('ids') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  var hq = new URLSearchParams(String(location.hash || '').replace(/^#/, ''));   /* ids طولانی در hash می‌آید */
+  var IDS = (q.get('ids') || hq.get('ids') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   var PER = q.get('per') === '2' ? 2 : 1;
   var ORIENT = q.get('orient') === 'landscape' ? 'landscape' : 'portrait';
   var TOC = q.get('toc') !== '0';
   var AUTO = q.get('auto') === '1';
   var MODE = q.get('mode') || 'auto';
+  /* filtered=1: خروجی از کاتالوگ با فیلتر/جستجو گرفته شده → فقط همان کالاها؛ بدون فهرست انواع/برندها و بدون فیلتر چاپ.
+     فهرست انواع و برندها فقط در خروجی «کل کاتالوگ» (بدون فیلتر) چاپ می‌شود. */
+  var FILTERED = q.get('filtered') === '1';
   var SRC = q.get('src') || '';        // 'compare' = خروجی از مقایسه محصولات
   var TYPE_F = q.get('type') || '';    // فیلتر اولیه: نوع کالا (مثلاً 10 یا code-10)
   var BRAND_F = q.get('brand') || '';  // فیلتر اولیه: نام برند
@@ -55,7 +59,7 @@
      تصویرها: assets/img/intro/cover.jpg ، p2.jpg ، p3.jpg (A4 افقی) */
   var INTRO = 0, TI = window.HG_TYPE_ICONS, BL = window.HG_BRAND_LOGOS;
   function imgSheet(src) {
-    return '<section class="sheet img-sheet"><img src="' + src + '" alt=""></section>';
+    return '<section class="sheet img-sheet' + (ORIENT === 'landscape' ? ' landscape' : '') + '"><img src="' + src + '" alt=""></section>';
   }
   function introSheets() {
     return imgSheet('assets/img/intro/cover.jpg') + imgSheet('assets/img/intro/p2.jpg') + imgSheet('assets/img/intro/p3.jpg');
@@ -145,6 +149,7 @@
         '</div>' +
         '<div class="p-code">' +'<br>کد کالا : '+ esc(p.sku || '') +
           '<br>برند: ' + esc(p.brand || '-') +
+          (colorOf(p) ? '<br>رنگ: ' + colorHTML(p) : '') +
           '<br>' + esc(AVAIL[p.availability || 'in']) + '</div>' +
       '</div>' +
       '<div class="p-body">' +
@@ -233,7 +238,7 @@
     var CHIPS = LAND() ? 7 : 4, CAP = LAND() ? 100 : 183;
     m.typePages = paginate(m.types, function (t) { return 9 + 6.5 * Math.ceil(t.brands.length / CHIPS); }, CAP);
     m.brandPages = paginate(m.brands, function (g) { return 9 + 6.5 * Math.ceil(g.refs.length / CHIPS); }, CAP);
-    m.noIndex = !(TOC && LIST.length > 1);
+    m.noIndex = !(TOC && LIST.length > 1) || FILTERED;
     if (m.noIndex) { m.typePages = []; m.brandPages = []; }
     m.startPage = 2 + INTRO + m.typePages.length + m.brandPages.length;
 
@@ -244,7 +249,7 @@
     var endRow = function () { if (col !== 0) { col = 0; y += ROW; } };
     m.types.forEach(function (t) {
       newPage();
-      var th = 20 + 6.5 * Math.ceil(t.brands.length / (LAND() ? 8 : 5));
+      var th = 20 + (FILTERED ? 0 : 6.5 * Math.ceil(t.brands.length / (LAND() ? 8 : 5)));
       cur.push({ type: 'type', t: t }); y += th; t.page = m.startPage + pages.length;
       t.brands.forEach(function (b) {
         endRow();
@@ -263,12 +268,25 @@
     return m;
   }
 
+  /* رنگ لامپ از روی رقم ۶ کد کالا (فقط گروه‌های ۱۰ تا ۱۷) */
+  function colorOf(p) {
+    var cm = window.HG_CODEMAP, m = /^code-(1[0-7])$/.exec(rootCat(p).id);
+    if (!m || !cm || !p.sku) { return null; }
+    var d = String(p.sku).charAt(5), l = (cm.colors || {})[d], h = (cm.colorHex || {})[d];
+    return (l && h) ? { label: l, hex: h } : null;
+  }
+  function colorHTML(p) {
+    var k = colorOf(p);
+    return k ? '<span class="c-color"><i class="c-sw" style="background:' + esc(k.hex) + '"></i>' + esc(k.label) + '</span>' : '';
+  }
+
   function compactCard(p) {
     return '<article class="c-card">' +
       '<div class="c-img">' + ((p.images && p.images.length) ? '<img src="' + U.img(p) + '" alt="' + esc(p.name) + '">' :
         '<span class="c-ph">' + esc(rootCat(p).title.charAt(0)) + '</span>') + '</div>' +
       '<div class="c-name">' + esc(p.name) + '</div>' +
       (p.sku ? '<div class="c-code">کد کالا: ' + esc(p.sku) + '</div>' : '') +
+      colorHTML(p) +
     '</article>';
   }
 
@@ -295,8 +313,8 @@
           curT = it.t.title;
           return '<div class="c-type" id="' + it.t.anchor + '"><h1>' + tIcon(it.t, 22) + esc(it.t.title) + '</h1>' +
             '<i>' + fa(it.t.n) + ' کالا • ' + fa(it.t.brands.length) + ' برند</i>' +
-            '<div class="chips">' + chipsHTML(it.t.brands, function (b) { return b.anchor; },
-              function (b) { return b.name; }, function (b) { return b.items.length; }) + '</div></div>';
+            (FILTERED ? '' : '<div class="chips">' + chipsHTML(it.t.brands, function (b) { return b.anchor; },
+              function (b) { return b.name; }, function (b) { return b.items.length; }) + '</div>') + '</div>';
         }
         if (it.type === 'brand' || it.type === 'cont') {
           return '<h2 class="c-brand" ' + (it.type === 'brand' ? 'id="' + it.b.anchor + '"' : '') + '><span>' + bLogo(it.b.name, 'c-logo') + esc(it.b.name) + '</span>' +
@@ -351,7 +369,9 @@
       el.id = 'page-size';
       document.head.appendChild(el);
     }
-    el.textContent = '@page { size: A4 ' + (ORIENT === 'landscape' ? 'landscape' : 'portrait') + '; margin: 0; } @page imgland { size: A4 landscape; margin: 0; }';
+    /* صفحه‌های تصویری (جلد + مقدمه): در A4 عمودی عرض همان ۲۱۰ میلی‌متر بقیه‌ی صفحه‌هاست (ارتفاع = نسبت تصویر) */
+    var imgSize = ORIENT === 'landscape' ? 'A4 landscape' : '210mm 148.4mm';
+    el.textContent = '@page { size: A4 ' + (ORIENT === 'landscape' ? 'landscape' : 'portrait') + '; margin: 0; } @page imgland { size: ' + imgSize + '; margin: 0; }';
   }
 
   /* ------------------------------------------------------ انتخاب کالاها */
@@ -370,7 +390,7 @@
   /* --------------------------------------------------------- ساخت صفحات */
   function render() {
     var st = S.data.settings || {};
-    var hasToc = TOC && LIST.length > 1;
+    var hasToc = TOC && LIST.length > 1 && !FILTERED;
     var mode = resolvedMode();
     INTRO = (LIST.length > 1 && SRC !== 'compare') ? 2 : 0;
 
@@ -460,6 +480,7 @@
     on('tp-mode-compact', function () { setOpt('mode', 'compact'); });
     on('tp-mode-detail', function () { setOpt('mode', 'detail'); });
     var selT = document.getElementById('tp-type'), selB = document.getElementById('tp-brand');
+    if (FILTERED && selT) { var fg = selT.closest('.tp-filters'); if (fg) { fg.hidden = true; } }
     if (selT && selB) {
       var all = (IDS.length && IDS[0] !== 'all') ? IDS.map(S.product).filter(Boolean) : S.products();
       var ts = {}, bs = {};
